@@ -48,7 +48,7 @@ router.post('/blog/addblog', (req, res) => {
   //update
   router.put('/blog/:id', (req, res) => {
     var existAccounts = getAccountData()
-    fs.readFileSync(dataPath, 'utf8', (err, data) => {
+    fs.readFile(dataPath, 'utf8', (err, data) => {
       const accountId = req.params['id'];
 
       let obj = new Blog();
