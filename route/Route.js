@@ -1,10 +1,9 @@
 const express = require("express")
-const router = express.Router();
 const fs = require('fs');
-const blogRoutes = require('./Blogs.js');
 const  Blog  = require('./../BlogsData/blogs.js');
-router.use(blogRoutes);
+
 const dataPath = './BlogsData/blog.json'
+const router = express.Router();
 
 const saveAccountData = (data) => {
     const stringifyData = JSON.stringify(data)
@@ -15,36 +14,41 @@ const getAccountData = () => {
     return JSON.parse(jsonData)   
 }
 
-//post
-blogRoutes.post('/blog/addblog', (req, res) => {
- 
-    var existblogs = getAccountData()
-    const newAccountId = Math.floor(100000 + Math.random() * 900000)
-  
-    let obj = new Blog();
-    obj.title = req.body.title;
-    obj.content = req.body.content;
-    obj.author = req.body.author;
-    obj.timestamp = new Date();
-
-
-    existblogs[newAccountId] = obj
-    console.log(existblogs);
-    saveAccountData(existblogs);
-    res.send({success: true, msg: 'Blog added successfully'})
-})
-
 //Read
 
-blogRoutes.get('/blog/list', (req, res) => {
+router.get('/blog/list', (req, res) => {
     const blogaccounts = getAccountData()
     res.send(blogaccounts)
   })
 
+  //Read By Id
+  router.get('/blog/:id',(req ,res) =>{
+    const blogs= getAccountData();
+    const objectWithDesireId = blogs[req.params['id']];
+    res.send(objectWithDesireId);
+  }) 
+
+  //post
+router.post('/blog/addblog', (req, res) => {
+ 
+  var existblogs = getAccountData()
+  const newAccountId = Math.floor(100000 + Math.random() * 900000)
+
+  let obj = new Blog();
+  obj.title = req.body.title;
+  obj.content = req.body.content;
+  obj.author = req.body.author;
+  obj.timestamp = new Date();
+
+  existblogs[newAccountId] = obj
+  saveAccountData(existblogs);
+  res.send({success: true, msg: 'Blog added successfully'})
+})
+
   //update
-  blogRoutes.put('/blog/:id', (req, res) => {
+  router.put('/blog/:id', (req, res) => {
     var existAccounts = getAccountData()
-    fs.readFile(dataPath, 'utf8', (err, data) => {
+    fs.readFileSync(dataPath, 'utf8', (err, data) => {
       const accountId = req.params['id'];
 
       let obj = new Blog();
@@ -60,7 +64,7 @@ blogRoutes.get('/blog/list', (req, res) => {
   });
 
   //Delete
-  blogRoutes.delete('/blog/delete/:id', (req, res) => {
+  router.delete('/blog/delete/:id', (req, res) => {
     fs.readFile(dataPath, 'utf8', (err, data) => {
       var existAccounts = getAccountData()
       const userId = req.params['id'];
@@ -70,11 +74,6 @@ blogRoutes.get('/blog/list', (req, res) => {
     }, true);
   })
 
-  //Read By Id
-  blogRoutes.get('/blog/:id',(req ,res) =>{
-    const blogs= getAccountData();
-    const objectWithDesireId = blogs[req.params['id']];
-    res.send(objectWithDesireId);
-  })
+  
 
 module.exports = router;
